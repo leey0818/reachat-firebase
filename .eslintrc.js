@@ -13,4 +13,5 @@ module.exports = {
       version: 'detect',
     },
   },
+  ignorePatterns: ['craco.config.js'],
 };
