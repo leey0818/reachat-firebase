@@ -1,6 +1,7 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import ChatPage from '@pages/ChatPage';
 import LoginPage from '@pages/LoginPage';
+import SignUpPage from '@pages/SignUpPage';
 import './App.css';
 import './firebase';
 
@@ -13,6 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ChatPage />}></Route>
         <Route path="/login" element={<LoginPage />}></Route>
+        <Route path="/signup" element={<SignUpPage />}></Route>
       </Routes>
     </BrowserRouter>
   );
