@@ -1,7 +1,8 @@
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
-import './App.css';
 import ChatPage from '@pages/ChatPage';
 import LoginPage from '@pages/LoginPage';
+import './App.css';
+import './firebase';
 
 function App() {
   return (
