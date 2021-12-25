@@ -1,8 +1,10 @@
+import md5 from 'md5';
 import { Button, Card, Form, Input, message, Typography } from 'antd';
 import { Rule } from 'antd/lib/form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
+import { getDatabase, ref, set } from 'firebase/database';
 
 type FormInputValues = {
   email: string;
@@ -28,8 +30,23 @@ function SignUp() {
     // create user to firebase
     const auth = getAuth();
     createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then((userCredential) => {
-        console.log(userCredential);
+      .then(({ user }) => {
+        const avatarUrl = `https://www.gravatar.com/avatar/${md5(values.email)}?d=identicon`;
+
+        const db = getDatabase();
+        const setUserToDatabase = set(ref(db, `users/${user.uid}`), {
+          name: values.nickname,
+          avatar: avatarUrl,
+        });
+
+        const updateUserProfile = updateProfile(user, {
+          displayName: values.nickname,
+          photoURL: avatarUrl,
+        });
+
+        return Promise.all([updateUserProfile, setUserToDatabase]);
+      })
+      .then(() => {
         message.success('정상적으로 가입되었습니다.');
         navigate('/login');
       })
