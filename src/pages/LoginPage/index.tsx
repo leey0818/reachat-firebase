@@ -3,16 +3,23 @@ import { Link } from 'react-router-dom';
 import { Rule } from 'antd/lib/form';
 import { Button, Card, Form, Input, message, Typography } from 'antd';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import styled from 'styled-components';
 
 type FormInputValues = {
   email: string;
   password: string;
 };
 
-const getFormRequiredRule = (name: string): Rule => ({
+const getFormRequiredRule = (message: string): Rule => ({
   required: true,
-  message: `${name}을 입력하세요.`,
+  message,
 });
+
+const CardContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-top: 80px;
+`;
 
 function LoginPage() {
   const emailRef = useRef<Input>(null);
@@ -43,14 +50,14 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 80 }}>
+    <CardContainer>
       <Card style={{ width: 500 }}>
         <Typography.Title style={{ textAlign: 'center' }}>로그인</Typography.Title>
         <Form layout="vertical" form={form} onFinish={onFinish}>
-          <Form.Item label="Email" name="email" rules={[getFormRequiredRule('이메일')]}>
-            <Input type="email" ref={emailRef}></Input>
+          <Form.Item label="Email" name="email" rules={[getFormRequiredRule('이메일을 입력하세요.')]}>
+            <Input type="email" ref={emailRef} autoFocus={true}></Input>
           </Form.Item>
-          <Form.Item label="Password" name="password" rules={[getFormRequiredRule('패스워드')]}>
+          <Form.Item label="Password" name="password" rules={[getFormRequiredRule('패스워드를 입력하세요.')]}>
             <Input.Password ref={passwordRef}></Input.Password>
           </Form.Item>
           <div>
@@ -63,7 +70,7 @@ function LoginPage() {
           </div>
         </Form>
       </Card>
-    </div>
+    </CardContainer>
   );
 }
 

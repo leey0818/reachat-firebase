@@ -1,10 +1,11 @@
-import md5 from 'md5';
 import { Button, Card, Form, Input, message, Typography } from 'antd';
 import { Rule } from 'antd/lib/form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
 import { getDatabase, ref, set } from 'firebase/database';
+import md5 from 'md5';
+import styled from 'styled-components';
 
 type FormInputValues = {
   email: string;
@@ -13,10 +14,13 @@ type FormInputValues = {
   passwordConfirm: string;
 };
 
-const createFormRulesWithRequired = (name: string, ...rules: Rule[]): Rule[] => [
-  { required: true, message: `${name}을 입력하세요.` },
-  ...rules,
-];
+const createFormRulesWithRequired = (message: string, ...rules: Rule[]): Rule[] => [{ required: true, message }, ...rules];
+
+const CardContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-top: 80px;
+`;
 
 function SignUp() {
   const navigate = useNavigate();
@@ -63,34 +67,37 @@ function SignUp() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 80 }}>
+    <CardContainer>
       <Card style={{ width: 500 }}>
         <Typography.Title style={{ textAlign: 'center' }}>회원가입</Typography.Title>
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
             label="Email"
             name="email"
-            rules={createFormRulesWithRequired('이메일', {
+            rules={createFormRulesWithRequired('이메일을 입력하세요.', {
               type: 'email',
               message: '이메일 형식으로 입력하세요.',
             })}
           >
             <Input type="email" ref={emailRef}></Input>
           </Form.Item>
-          <Form.Item label="Name" name="nickname" rules={createFormRulesWithRequired('닉네임')}>
+          <Form.Item label="Name" name="nickname" rules={createFormRulesWithRequired('닉네임을 입력하세요.')}>
             <Input></Input>
           </Form.Item>
           <Form.Item
             label="Password"
             name="password"
-            rules={createFormRulesWithRequired('비밀번호', { min: 8, message: '최소 ${min}자리 이상 입력해야 합니다.' })}
+            rules={createFormRulesWithRequired('비밀번호를 입력하세요.', {
+              min: 8,
+              message: '최소 ${min}자리 이상 입력해야 합니다.',
+            })}
           >
             <Input.Password></Input.Password>
           </Form.Item>
           <Form.Item
             label="Password Confirm"
             name="passwordConfirm"
-            rules={createFormRulesWithRequired('비밀번호', ({ getFieldValue }) => ({
+            rules={createFormRulesWithRequired('비밀번호를 입력하세요.', ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
@@ -111,7 +118,7 @@ function SignUp() {
           </div>
         </Form>
       </Card>
-    </div>
+    </CardContainer>
   );
 }
 

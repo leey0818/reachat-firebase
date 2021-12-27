@@ -7,6 +7,16 @@ import SignUpPage from '@pages/SignUpPage';
 import './App.css';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setCurrentUser } from '@store/modules/user';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
+
+const SpinContainer = styled.div`
+  display: flex;
+  height: 120px;
+  justify-content: center;
+  align-items: center;
+`;
 
 function App() {
   const navigate = useNavigate();
@@ -34,7 +44,11 @@ function App() {
   }, []);
 
   if (initializing) {
-    return <div>Loading...</div>;
+    return (
+      <SpinContainer>
+        <Spin tip="Loading..." size="large" indicator={<LoadingOutlined />}></Spin>
+      </SpinContainer>
+    );
   }
 
   return (
