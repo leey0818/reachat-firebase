@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type CurrentUserState = {
   uid: string;
-  email: string | null;
+  email: string;
   name: string | null;
   avatar: string | null;
 };
@@ -31,6 +31,7 @@ const slice = createSlice({
   },
 });
 
+export type { CurrentUserState };
 export const { setCurrentUser, clearCurrentUser } = slice.actions;
 
 export default slice.reducer;

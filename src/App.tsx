@@ -30,7 +30,7 @@ function App() {
         dispatch(
           setCurrentUser({
             uid: user.uid,
-            email: user.email,
+            email: user.email as string,
             name: user.displayName,
             avatar: user.photoURL,
           })

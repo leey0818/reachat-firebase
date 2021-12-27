@@ -1,8 +1,10 @@
 import styled from 'styled-components';
-import { Avatar, Dropdown, Menu, Modal } from 'antd';
+import { Avatar, Dropdown, Menu, message, Modal } from 'antd';
 import { DownOutlined, InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import { getAuth, signOut } from 'firebase/auth';
 import { useAppSelector } from '@store/hooks';
+import ProfileUploadModal from './ProfileUploadModal';
+import { useState } from 'react';
 
 type UserAvatarProps = {
   name?: string;
@@ -37,6 +39,7 @@ function UserInfo() {
   const user = useAppSelector((state) => state.user.currentUser);
   const userName = user?.name || '';
   const avatarUrl = user?.avatar || '';
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleClickSignOut = () => {
     Modal.confirm({
@@ -50,15 +53,30 @@ function UserInfo() {
     });
   };
 
+  const handleClickChangeImage = () => {
+    setModalVisible(true);
+  };
+
+  const handleModalChanged = () => {
+    message.success('변경되었습니다.');
+    setModalVisible(false);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+
   return (
     <UserInfoBox>
       <UserAvatar src={avatarUrl} name={userName}></UserAvatar>
+
+      <ProfileUploadModal visible={modalVisible} onChanged={handleModalChanged} onClose={handleModalClose}></ProfileUploadModal>
 
       <Dropdown
         overlay={
           <Menu>
             <Menu.Item key="setimage">
-              <a>프로필 사진 변경</a>
+              <a onClick={handleClickChangeImage}>프로필 사진 변경</a>
             </Menu.Item>
             <Menu.Item key="signout">
               <a onClick={handleClickSignOut}>로그아웃</a>
