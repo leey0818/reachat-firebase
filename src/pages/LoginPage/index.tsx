@@ -43,6 +43,8 @@ function LoginPage() {
         passwordRef.current?.focus();
       } else if (error.code === 'auth/too-many-requests') {
         message.error('로그인을 너무 많이 시도했습니다. 잠시 후 다시 이용해 주세요.');
+      } else if (error.code === 'auth/user-disabled') {
+        message.error('로그인이 차단된 사용자 입니다. 관리자에게 문의하세요.');
       } else {
         message.error(`${error.message} (${error.code})`);
       }

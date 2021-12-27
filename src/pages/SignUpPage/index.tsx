@@ -1,6 +1,6 @@
 import { Button, Card, Form, Input, message, Typography } from 'antd';
 import { Rule } from 'antd/lib/form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
 import { getDatabase, ref, set } from 'firebase/database';
@@ -23,7 +23,6 @@ const CardContainer = styled.div`
 `;
 
 function SignUp() {
-  const navigate = useNavigate();
   const emailRef = useRef<Input>(null);
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -38,7 +37,7 @@ function SignUp() {
         const avatarUrl = `https://www.gravatar.com/avatar/${md5(values.email)}?d=identicon`;
 
         const db = getDatabase();
-        const setUserToDatabase = set(ref(db, `users/${user.uid}`), {
+        const addUserToDatabase = set(ref(db, `users/${user.uid}`), {
           name: values.nickname,
           avatar: avatarUrl,
         });
@@ -48,11 +47,10 @@ function SignUp() {
           photoURL: avatarUrl,
         });
 
-        return Promise.all([updateUserProfile, setUserToDatabase]);
+        return Promise.all([updateUserProfile, addUserToDatabase]);
       })
       .then(() => {
         message.success('정상적으로 가입되었습니다.');
-        navigate('/login');
       })
       .catch((error) => {
         setLoading(false);

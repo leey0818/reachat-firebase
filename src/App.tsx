@@ -6,7 +6,7 @@ import LoginPage from '@pages/LoginPage';
 import SignUpPage from '@pages/SignUpPage';
 import './App.css';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { setCurrentUser } from '@store/modules/user';
+import { clearCurrentUser, setCurrentUser } from '@store/modules/user';
 import { Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -37,7 +37,7 @@ function App() {
         );
         navigate('/');
       } else {
-        dispatch(setCurrentUser(null));
+        dispatch(clearCurrentUser());
         navigate('/login');
       }
     });

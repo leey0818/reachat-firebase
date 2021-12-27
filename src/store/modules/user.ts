@@ -20,13 +20,17 @@ const slice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    setCurrentUser: (state, action: PayloadAction<CurrentUserState | null>) => {
+    setCurrentUser: (state, action: PayloadAction<CurrentUserState>) => {
       state.initializing = false;
       state.currentUser = action.payload;
+    },
+    clearCurrentUser: (state) => {
+      state.initializing = false;
+      state.currentUser = null;
     },
   },
 });
 
-export const { setCurrentUser } = slice.actions;
+export const { setCurrentUser, clearCurrentUser } = slice.actions;
 
 export default slice.reducer;
