@@ -69,9 +69,6 @@ function UserInfo() {
   return (
     <UserInfoBox>
       <UserAvatar src={avatarUrl} name={userName}></UserAvatar>
-
-      <ProfileUploadModal visible={modalVisible} onChanged={handleModalChanged} onClose={handleModalClose}></ProfileUploadModal>
-
       <Dropdown
         overlay={
           <Menu>
@@ -89,6 +86,8 @@ function UserInfo() {
           {userName} <DownOutlined />
         </DropdownText>
       </Dropdown>
+
+      <ProfileUploadModal visible={modalVisible} onChanged={handleModalChanged} onClose={handleModalClose}></ProfileUploadModal>
     </UserInfoBox>
   );
 }
