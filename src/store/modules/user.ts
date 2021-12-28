@@ -28,10 +28,13 @@ const slice = createSlice({
       state.initializing = false;
       state.currentUser = null;
     },
+    setAvatarURL: (state, action: PayloadAction<string>) => {
+      state.currentUser && (state.currentUser.avatar = action.payload);
+    },
   },
 });
 
 export type { CurrentUserState };
-export const { setCurrentUser, clearCurrentUser } = slice.actions;
+export const { setCurrentUser, clearCurrentUser, setAvatarURL } = slice.actions;
 
 export default slice.reducer;

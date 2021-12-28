@@ -1,13 +1,13 @@
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { CurrentUserState, setCurrentUser } from '@store/modules/user';
+import { CurrentUserState, setAvatarURL } from '@store/modules/user';
 import { Button, message, Modal, Upload } from 'antd';
 import { RcFile } from 'antd/lib/upload';
 import { UploadFile } from 'antd/lib/upload/interface';
 import { getAuth, updateProfile, User } from 'firebase/auth';
 import { getDatabase, ref as dbRef, update } from 'firebase/database';
 import { deleteObject, getDownloadURL, getStorage, ref, StorageReference, uploadBytes } from 'firebase/storage';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import md5 from 'md5';
 import styled from 'styled-components';
 
@@ -63,6 +63,12 @@ function ProfileUploadModal(props: ProfileUploadModalProps) {
   const user = useAppSelector((state) => state.user.currentUser) as CurrentUserState;
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Reset state on toggle modal visible
+  useEffect(() => {
+    setFiles([]);
+    setLoading(false);
+  }, [props.visible]);
 
   const setFile = (file: UploadFile) => setFiles([file]);
 
@@ -121,7 +127,7 @@ function ProfileUploadModal(props: ProfileUploadModalProps) {
 
     promise
       .then((imageUrl) => updateProfileImage(user.uid, imageUrl))
-      .then((imageUrl) => dispatch(setCurrentUser({ ...user, avatar: imageUrl })))
+      .then((imageUrl) => dispatch(setAvatarURL(imageUrl)))
       .then(() => {
         setLoading(false);
         props.onChanged();
