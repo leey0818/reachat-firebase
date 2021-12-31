@@ -22,6 +22,7 @@ const MenuItem = styled(Menu.Item)`
   && {
     height: 22px;
     line-height: 22px;
+    padding-left: 16px;
   }
 `;
 
