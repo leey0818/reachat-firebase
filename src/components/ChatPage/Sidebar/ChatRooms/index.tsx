@@ -14,6 +14,7 @@ type ChatRoom = {
 function ChatRooms() {
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const db = getDatabase();
@@ -47,6 +48,16 @@ function ChatRooms() {
     };
   }, []);
 
+  // Select first chat room (use debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (rooms.length && !selectedKeys.length) {
+        setSelectedKeys([rooms[0].id]);
+      }
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [rooms]);
+
   const addChatRoom = (room: ChatRoom) => {
     setRooms((oldRooms) => [room, ...oldRooms]);
   };
@@ -71,10 +82,11 @@ function ChatRooms() {
   const handleClickAdd = () => setModalVisible(true);
   const handleClose = () => setModalVisible(false);
   const handleCreated = () => setModalVisible(false);
+  const handleSelect = ({ key }: { key: string }) => setSelectedKeys([key]);
 
   return (
     <>
-      <Menu theme="dark" selectable={false}>
+      <Menu theme="dark" onSelect={handleSelect} selectedKeys={selectedKeys}>
         <MenuGroup title="채팅방 목록" icon={<PlusCircleFilled />} onClick={handleClickAdd}>
           {rooms.map((room) => (
             <MenuItem key={room.id}># {room.name}</MenuItem>

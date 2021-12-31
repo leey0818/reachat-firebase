@@ -24,6 +24,10 @@ const MenuItem = styled(Menu.Item)`
     line-height: 22px;
     padding-left: 16px;
   }
+  &&&.ant-menu-item-selected {
+    background-color: inherit;
+    border-left: 5px solid #1890ff;
+  }
 `;
 
 function MenuGroup(props: MenuGroupProps) {
