@@ -1,8 +1,9 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
 import user from './modules/user';
+import chatRoom from './modules/chatRoom';
 
-const reducer = combineReducers({ user });
+const reducer = combineReducers({ user, chatRoom });
 
 const store = configureStore({
   reducer,

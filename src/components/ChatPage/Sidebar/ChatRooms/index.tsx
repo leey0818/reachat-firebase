@@ -3,6 +3,8 @@ import { getDatabase, off, onChildAdded, onChildChanged, onChildRemoved, ref } f
 import { PlusCircleFilled } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { MenuGroup, MenuItem } from '../styles';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { setCurrentRoomId } from '@store/modules/chatRoom';
 import CreateChatRoomModal from './CreateChatRoomModal';
 
 type ChatRoom = {
@@ -12,9 +14,10 @@ type ChatRoom = {
 };
 
 function ChatRooms() {
+  const dispatch = useAppDispatch();
+  const curRoomId = useAppSelector((state) => state.chatRoom.currentRoom.roomId);
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const db = getDatabase();
@@ -51,8 +54,8 @@ function ChatRooms() {
   // Select first chat room (use debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (rooms.length && !selectedKeys.length) {
-        setSelectedKeys([rooms[0].id]);
+      if (rooms.length && !curRoomId) {
+        dispatch(setCurrentRoomId(rooms[0].id));
       }
     }, 50);
     return () => clearTimeout(timer);
@@ -82,11 +85,11 @@ function ChatRooms() {
   const handleClickAdd = () => setModalVisible(true);
   const handleClose = () => setModalVisible(false);
   const handleCreated = () => setModalVisible(false);
-  const handleSelect = ({ key }: { key: string }) => setSelectedKeys([key]);
+  const handleSelect = ({ key }: { key: string }) => dispatch(setCurrentRoomId(key));
 
   return (
     <>
-      <Menu theme="dark" onSelect={handleSelect} selectedKeys={selectedKeys}>
+      <Menu theme="dark" onSelect={handleSelect} selectedKeys={curRoomId ? [curRoomId] : undefined}>
         <MenuGroup title="채팅방 목록" icon={<PlusCircleFilled />} onClick={handleClickAdd}>
           {rooms.map((room) => (
             <MenuItem key={room.id}># {room.name}</MenuItem>
