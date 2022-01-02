@@ -1,14 +1,13 @@
 import { Layout } from 'antd';
 import Sidebar from '@components/ChatPage/Sidebar';
-
-const { Content } = Layout;
+import MainContent from '@components/ChatPage/MainContent';
 
 function ChatPage() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sidebar></Sidebar>
       <Layout>
-        <Content>Content</Content>
+        <MainContent></MainContent>
       </Layout>
     </Layout>
   );
