@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getDatabase, off, onChildAdded, onChildChanged, onChildRemoved, ref } from 'firebase/database';
 import { PlusCircleFilled } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { MenuGroup, MenuItem } from '../styles';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { setCurrentRoomId } from '@store/modules/chatRoom';
+import { setCurrentRoom } from '@store/modules/chatRoom';
 import CreateChatRoomModal from './CreateChatRoomModal';
 
 type ChatRoom = {
@@ -15,7 +15,7 @@ type ChatRoom = {
 
 function ChatRooms() {
   const dispatch = useAppDispatch();
-  const curRoomId = useAppSelector((state) => state.chatRoom.currentRoom.roomId);
+  const curRoomId = useAppSelector((state) => state.chatRoom.currentRoom?.id);
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
 
@@ -55,7 +55,7 @@ function ChatRooms() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (rooms.length && !curRoomId) {
-        dispatch(setCurrentRoomId(rooms[0].id));
+        setCurrentRoomInfo(rooms[0].id);
       }
     }, 50);
     return () => clearTimeout(timer);
@@ -82,10 +82,26 @@ function ChatRooms() {
     setRooms((oldRooms) => oldRooms.filter((o) => o.id !== roomId));
   };
 
+  const setCurrentRoomInfo = useCallback(
+    (key: string) => {
+      const room = rooms.find((o) => o.id === key);
+      if (room) {
+        dispatch(
+          setCurrentRoom({
+            id: room.id,
+            name: room.name,
+            description: room.desc,
+          })
+        );
+      }
+    },
+    [rooms]
+  );
+
   const handleClickAdd = () => setModalVisible(true);
   const handleClose = () => setModalVisible(false);
   const handleCreated = () => setModalVisible(false);
-  const handleSelect = ({ key }: { key: string }) => dispatch(setCurrentRoomId(key));
+  const handleSelect = ({ key }: { key: string }) => setCurrentRoomInfo(key);
 
   return (
     <>

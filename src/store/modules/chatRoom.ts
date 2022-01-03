@@ -1,29 +1,29 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 type CurrentRoomState = {
-  roomId: string | null;
+  id: string;
+  name: string;
+  description?: string;
 };
 
 type ChatRoomState = {
-  currentRoom: CurrentRoomState;
+  currentRoom: CurrentRoomState | null;
 };
 
 const initialState: ChatRoomState = {
-  currentRoom: {
-    roomId: null,
-  },
+  currentRoom: null,
 };
 
 const slice = createSlice({
   name: 'chatRoom',
   initialState,
   reducers: {
-    setCurrentRoomId: (state, action: PayloadAction<string>) => {
-      state.currentRoom.roomId = action.payload;
+    setCurrentRoom: (state, action: PayloadAction<CurrentRoomState>) => {
+      state.currentRoom = action.payload;
     },
   },
 });
 
-export const { setCurrentRoomId } = slice.actions;
+export const { setCurrentRoom } = slice.actions;
 
 export default slice.reducer;
