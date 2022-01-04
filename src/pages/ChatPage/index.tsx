@@ -6,9 +6,7 @@ function ChatPage() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sidebar></Sidebar>
-      <Layout>
-        <MainContent></MainContent>
-      </Layout>
+      <MainContent></MainContent>
     </Layout>
   );
 }

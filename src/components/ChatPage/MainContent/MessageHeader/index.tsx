@@ -1,7 +1,7 @@
+import styled from 'styled-components';
+import { Avatar, Col, Layout, Row, Space } from 'antd';
 import { StarOutlined, UnlockOutlined } from '@ant-design/icons';
 import { useAppSelector } from '@store/hooks';
-import { Avatar, Col, Layout, Row, Space } from 'antd';
-import styled from 'styled-components';
 
 const ShadowHeader = styled(Layout.Header)`
   background-color: #fff;

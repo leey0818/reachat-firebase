@@ -24,6 +24,7 @@ const slice = createSlice({
   },
 });
 
+export type { CurrentRoomState };
 export const { setCurrentRoom } = slice.actions;
 
 export default slice.reducer;
