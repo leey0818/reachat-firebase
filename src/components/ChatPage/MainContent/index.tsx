@@ -1,5 +1,6 @@
 import { Layout } from 'antd';
 import styled from 'styled-components';
+import MessageContent from './MessageContent';
 import MessageForm from './MessageForm';
 import MessageHeader from './MessageHeader';
 
@@ -12,18 +13,12 @@ const Content = styled(Layout.Content)`
   background-color: #fff;
 `;
 
-const MessageWrap = styled.div`
-  height: 0;
-  flex: 1 1 auto;
-  overflow-y: auto;
-`;
-
 function MainContent() {
   return (
     <Layout>
       <MessageHeader></MessageHeader>
       <Content>
-        <MessageWrap></MessageWrap>
+        <MessageContent></MessageContent>
         <MessageForm></MessageForm>
       </Content>
     </Layout>
