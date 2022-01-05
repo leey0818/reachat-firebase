@@ -1,9 +1,10 @@
 import moment from 'moment';
 import styled from 'styled-components';
 import { useEffect, useRef, useState } from 'react';
-import { get, getDatabase, off, onChildAdded, ref } from 'firebase/database';
+import { get, getDatabase, off, onChildAdded, orderByChild, query, ref } from 'firebase/database';
 import { Avatar, Comment, Tooltip } from 'antd';
 import { useAppSelector } from '@store/hooks';
+import { UserOutlined } from '@ant-design/icons';
 
 type ChatUser = {
   key: string;
@@ -13,9 +14,9 @@ type ChatUser = {
 
 type ChatMessage = {
   key: string;
-  user: ChatUser;
   message: string;
   timestamp: number;
+  user?: ChatUser;
 };
 
 const MessageWrap = styled.div`
@@ -34,12 +35,36 @@ function MessageContent() {
     setMessages((oldMessages) => [...oldMessages, message]);
   };
 
+  const setChatMessageUser = (message: ChatMessage, user: ChatUser) => {
+    setMessages((oldMessages) => {
+      const idx = oldMessages.indexOf(message);
+      if (idx !== -1) {
+        const items = [...oldMessages];
+        items[idx] = { ...oldMessages[idx], user };
+        return items;
+      }
+      return oldMessages;
+    });
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const elem = wrapRef.current;
+      if (elem) {
+        elem.scrollTop = elem.scrollHeight - elem.clientHeight;
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [messages]);
+
   useEffect(() => {
     if (chatRoom) {
       const userPromises = new Map<string, PromiseLike<ChatUser>>();
       const db = getDatabase();
       const msgRef = ref(db, `messages/${chatRoom.id}`);
-      onChildAdded(msgRef, (snapshot) => {
+
+      onChildAdded(query(msgRef, orderByChild('timestamp')), (snapshot) => {
         const data = snapshot.val();
         const message = {
           key: snapshot.key as string,
@@ -63,7 +88,8 @@ function MessageContent() {
           userPromises.set(data.user, userPromise);
         }
 
-        userPromise.then((user) => addChatMessage({ ...message, user }));
+        addChatMessage(message);
+        userPromise.then((user) => setChatMessageUser(message, user));
       });
 
       return () => {
@@ -78,8 +104,8 @@ function MessageContent() {
       {messages.map((msg) => (
         <Comment
           key={msg.key}
-          author={msg.user.name}
-          avatar={<Avatar src={msg.user.avatar}></Avatar>}
+          author={msg.user && msg.user.name}
+          avatar={msg.user ? <Avatar src={msg.user.avatar}></Avatar> : <Avatar icon={<UserOutlined />}></Avatar>}
           content={<p>{msg.message}</p>}
           datetime={
             <Tooltip title={moment(msg.timestamp).format('YYYY-MM-DD a hh:mm')}>
