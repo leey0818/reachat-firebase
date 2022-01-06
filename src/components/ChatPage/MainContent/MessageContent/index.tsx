@@ -5,6 +5,7 @@ import { get, getDatabase, off, onChildAdded, orderByChild, query, ref } from 'f
 import { Avatar, Comment, Tooltip } from 'antd';
 import { useAppSelector } from '@store/hooks';
 import { UserOutlined } from '@ant-design/icons';
+import Moment from 'react-moment';
 
 type ChatUser = {
   key: string;
@@ -24,6 +25,12 @@ const MessageWrap = styled.div`
   flex: 1 1 auto;
   overflow-y: auto;
   scroll-behavior: smooth;
+`;
+
+const ChatMessage = styled(Comment)`
+  .ant-comment-inner {
+    padding: 8px 0;
+  }
 `;
 
 function MessageContent() {
@@ -102,17 +109,19 @@ function MessageContent() {
   return (
     <MessageWrap ref={wrapRef}>
       {messages.map((msg) => (
-        <Comment
+        <ChatMessage
           key={msg.key}
           author={msg.user && msg.user.name}
           avatar={msg.user ? <Avatar src={msg.user.avatar}></Avatar> : <Avatar icon={<UserOutlined />}></Avatar>}
           content={<p>{msg.message}</p>}
           datetime={
             <Tooltip title={moment(msg.timestamp).format('YYYY-MM-DD a hh:mm')}>
-              <span>{moment(msg.timestamp).fromNow()}</span>
+              <Moment format="MM-DD a hh:mm" fromNowDuring={moment().diff(moment().startOf('day'))} fromNow={true}>
+                {msg.timestamp}
+              </Moment>
             </Tooltip>
           }
-        ></Comment>
+        ></ChatMessage>
       ))}
     </MessageWrap>
   );
