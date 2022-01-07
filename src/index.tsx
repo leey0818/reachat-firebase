@@ -16,6 +16,12 @@ moment.locale('ko');
 ReactMoment.globalLocale = 'ko';
 ReactMoment.startPooledTimer(10000);
 
+ConfigProvider.config({
+  theme: {
+    primaryColor: '#3B88CE',
+  },
+});
+
 ReactDOM.render(
   <BrowserRouter>
     <Provider store={store}>
