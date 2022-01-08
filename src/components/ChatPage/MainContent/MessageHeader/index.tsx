@@ -22,7 +22,7 @@ function MessageHeader() {
 
   return (
     <ShadowHeader>
-      <Row justify="space-between">
+      <Row justify="space-between" wrap={false}>
         <Col>
           <Space size={6}>
             <UnlockOutlined />

@@ -28,6 +28,10 @@ type MessageProps = {
   children: string;
 };
 
+type MessageContentProps = {
+  searchText?: string;
+};
+
 const MessageWrap = styled.div`
   height: 0;
   flex: 1 1 auto;
@@ -49,10 +53,11 @@ function Message(props: MessageProps) {
   return <p>{props.children}</p>;
 }
 
-function MessageContent() {
+function MessageContent(props: MessageContentProps) {
   const chatRoom = useAppSelector((state) => state.chatRoom.currentRoom);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
 
   const addChatMessage = (message: ChatMessage) => {
     setMessages((oldMessages) => [...oldMessages, message]);
@@ -123,9 +128,24 @@ function MessageContent() {
     }
   }, [chatRoom]);
 
+  useEffect(() => {
+    if (props.searchText) {
+      const regex = new RegExp(props.searchText, 'gi');
+      const searchResults = messages.reduce((acc, message) => {
+        if (message.type === 'text' && message.message.match(regex)) {
+          acc.push(message);
+        }
+        return acc;
+      }, [] as ChatMessage[]);
+      setSearchResults(searchResults);
+    }
+
+    return () => setSearchResults([]);
+  }, [props.searchText]);
+
   return (
     <MessageWrap ref={wrapRef}>
-      {messages.map((msg) => (
+      {(props.searchText ? searchResults : messages).map((msg) => (
         <ChatMessage
           key={msg.key}
           author={msg.user?.name}
