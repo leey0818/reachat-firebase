@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 type MenuGroupProps = {
   title: string;
-  icon: ReactNode;
+  icon?: ReactNode;
   children?: ReactNode;
   onClick?: () => void;
 };
@@ -34,7 +34,7 @@ function MenuGroup(props: MenuGroupProps) {
   const title = (
     <MenuGroupTitle>
       <div>{props.title}</div>
-      <MenuGroupTitleButton onClick={props.onClick}>{props.icon}</MenuGroupTitleButton>
+      {props.icon && <MenuGroupTitleButton onClick={props.onClick}>{props.icon}</MenuGroupTitleButton>}
     </MenuGroupTitle>
   );
 
