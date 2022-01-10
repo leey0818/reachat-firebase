@@ -91,6 +91,7 @@ function ChatRooms() {
             id: room.id,
             name: room.name,
             description: room.desc,
+            private: false,
           })
         );
       }
@@ -108,7 +109,7 @@ function ChatRooms() {
       <Menu theme="dark" onSelect={handleSelect} selectedKeys={curRoomId ? [curRoomId] : undefined}>
         <MenuGroup title="채팅방 목록" icon={<PlusCircleFilled />} onClick={handleClickAdd}>
           {rooms.map((room) => (
-            <MenuItem key={room.id}># {room.name}</MenuItem>
+            <MenuItem key={room.id}>#{room.name}</MenuItem>
           ))}
         </MenuGroup>
       </Menu>

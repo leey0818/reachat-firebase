@@ -4,6 +4,7 @@ type CurrentRoomState = {
   id: string;
   name: string;
   description?: string;
+  private: boolean;
 };
 
 type ChatRoomState = {
@@ -21,10 +22,13 @@ const slice = createSlice({
     setCurrentRoom: (state, action: PayloadAction<CurrentRoomState>) => {
       state.currentRoom = action.payload;
     },
+    clearCurrentRoom: (state) => {
+      state.currentRoom = null;
+    },
   },
 });
 
 export type { CurrentRoomState };
-export const { setCurrentRoom } = slice.actions;
+export const { setCurrentRoom, clearCurrentRoom } = slice.actions;
 
 export default slice.reducer;
