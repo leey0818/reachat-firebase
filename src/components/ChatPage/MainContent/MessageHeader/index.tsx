@@ -19,14 +19,15 @@ const SubTitle = styled.small`
 
 function MessageHeader() {
   const curRoom = useAppSelector((state) => state.chatRoom.currentRoom);
+  const isPrivateRoom = curRoom?.private || false;
 
   return (
     <ShadowHeader>
       <Row justify="space-between" wrap={false}>
         <Col>
           <Space size={6}>
-            <UnlockOutlined />
-            <StarOutlined />
+            {!isPrivateRoom && <UnlockOutlined />}
+            {!isPrivateRoom && <StarOutlined />}
             <Title>
               {curRoom?.name}
               {curRoom?.description && <SubTitle>{curRoom.description}</SubTitle>}
