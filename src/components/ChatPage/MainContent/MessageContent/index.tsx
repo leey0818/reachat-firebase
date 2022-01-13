@@ -1,11 +1,11 @@
 import moment from 'moment';
 import styled from 'styled-components';
-import { useEffect, useRef, useState } from 'react';
+import Moment from 'react-moment';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { get, getDatabase, off, onChildAdded, orderByChild, query, ref } from 'firebase/database';
 import { Avatar, Comment, Image, Tooltip } from 'antd';
-import { useAppSelector } from '@store/hooks';
 import { UserOutlined } from '@ant-design/icons';
-import Moment from 'react-moment';
+import { useAppSelector } from '@store/hooks';
 
 type MessageType = 'text' | 'image';
 
@@ -15,12 +15,16 @@ type ChatUser = {
   avatar: string;
 };
 
+type ChatUserMap = {
+  [key: string]: ChatUser | undefined;
+};
+
 type ChatMessage = {
   key: string;
   type: MessageType;
+  uid: string;
   message: string;
   timestamp: number;
-  user?: ChatUser;
 };
 
 type MessageProps = {
@@ -45,6 +49,22 @@ const ChatMessage = styled(Comment)`
   }
 `;
 
+function throttledQueue<T>(fn: (queueDatas: T[]) => void, delay: number) {
+  let queue: T[] = [];
+  let timer: NodeJS.Timeout | null = null;
+  return (data: T) => {
+    queue.push(data);
+    if (!timer) {
+      timer = setTimeout(() => {
+        const queueDatas = queue.slice();
+        timer = null;
+        queue = [];
+        fn(queueDatas);
+      }, delay);
+    }
+  };
+}
+
 function Message(props: MessageProps) {
   if (props.type === 'image') {
     return <Image src={props.children} style={{ maxWidth: 200, maxHeight: 200 }}></Image>;
@@ -57,23 +77,28 @@ function MessageContent(props: MessageContentProps) {
   const chatRoom = useAppSelector((state) => state.chatRoom.currentRoom);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [users, setUsers] = useState<ChatUserMap>({});
   const [searchResults, setSearchResults] = useState<ChatMessage[]>([]);
 
-  const addChatMessage = (message: ChatMessage) => {
-    setMessages((oldMessages) => [...oldMessages, message]);
-  };
+  const addChatMessage = useMemo(
+    () =>
+      throttledQueue((messages: ChatMessage[]) => {
+        setMessages((oldMessages) => [...oldMessages, ...messages]);
+      }, 50),
+    []
+  );
 
-  const setChatMessageUser = (message: ChatMessage, user: ChatUser) => {
-    setMessages((oldMessages) => {
-      const idx = oldMessages.indexOf(message);
-      if (idx !== -1) {
-        const items = [...oldMessages];
-        items[idx] = { ...oldMessages[idx], user };
-        return items;
-      }
-      return oldMessages;
-    });
-  };
+  const addChatUserInfo = useCallback(
+    (user: ChatUser) => {
+      setUsers({
+        ...users,
+        [user.key]: user,
+      });
+    },
+    [users]
+  );
+
+  const getChatUserInfo = useCallback((uid: string) => users[uid], [users]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -88,7 +113,7 @@ function MessageContent(props: MessageContentProps) {
 
   useEffect(() => {
     if (chatRoom) {
-      const userPromises = new Map<string, PromiseLike<ChatUser>>();
+      const userSet = new Set<string>();
       const db = getDatabase();
       const msgRef = ref(db, `messages/${chatRoom.id}`);
 
@@ -97,33 +122,32 @@ function MessageContent(props: MessageContentProps) {
         const message = {
           key: snapshot.key as string,
           type: data.type || 'text',
+          uid: data.user,
           message: data.message,
           timestamp: data.timestamp,
         };
 
-        let userPromise = userPromises.get(data.user);
-        if (!userPromise) {
-          userPromise = get(ref(db, `users/${data.user}`)).then((snapshot) => {
+        if (!userSet.has(data.user)) {
+          userSet.add(data.user);
+          get(ref(db, `users/${data.user}`)).then((snapshot) => {
             const userData = snapshot.val();
             const chatUser: ChatUser = {
-              key: snapshot.key as string,
+              key: data.user,
               name: userData?.name || '',
               avatar: userData?.avatar || '',
             };
 
-            return chatUser;
+            addChatUserInfo(chatUser);
           });
-
-          userPromises.set(data.user, userPromise);
         }
 
         addChatMessage(message);
-        userPromise.then((user) => setChatMessageUser(message, user));
       });
 
       return () => {
         off(msgRef);
         setMessages([]);
+        setUsers({});
       };
     }
   }, [chatRoom]);
@@ -143,13 +167,14 @@ function MessageContent(props: MessageContentProps) {
     return () => setSearchResults([]);
   }, [props.searchText]);
 
-  return (
-    <MessageWrap ref={wrapRef}>
-      {(props.searchText ? searchResults : messages).map((msg) => (
+  const renderChatMessages = (chatMessages: ChatMessage[]) =>
+    chatMessages.map((msg) => {
+      const user = getChatUserInfo(msg.uid);
+      return (
         <ChatMessage
           key={msg.key}
-          author={msg.user?.name}
-          avatar={msg.user?.avatar ? <Avatar src={msg.user.avatar}></Avatar> : <Avatar icon={<UserOutlined />}></Avatar>}
+          author={user?.name}
+          avatar={user?.avatar ? <Avatar src={user.avatar}></Avatar> : <Avatar icon={<UserOutlined />}></Avatar>}
           content={<Message type={msg.type}>{msg.message}</Message>}
           datetime={
             <Tooltip title={moment(msg.timestamp).format('YYYY-MM-DD a hh:mm')}>
@@ -159,9 +184,10 @@ function MessageContent(props: MessageContentProps) {
             </Tooltip>
           }
         ></ChatMessage>
-      ))}
-    </MessageWrap>
-  );
+      );
+    });
+
+  return <MessageWrap ref={wrapRef}>{renderChatMessages(props.searchText ? searchResults : messages)}</MessageWrap>;
 }
 
 export default MessageContent;
