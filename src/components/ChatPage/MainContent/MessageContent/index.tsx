@@ -88,16 +88,7 @@ function MessageContent(props: MessageContentProps) {
     []
   );
 
-  const addChatUserInfo = useCallback(
-    (user: ChatUser) => {
-      setUsers({
-        ...users,
-        [user.key]: user,
-      });
-    },
-    [users]
-  );
-
+  const addChatUserInfo = (user: ChatUser) => setUsers((oldUsers) => ({ ...oldUsers, [user.key]: user }));
   const getChatUserInfo = useCallback((uid: string) => users[uid], [users]);
 
   useEffect(() => {
