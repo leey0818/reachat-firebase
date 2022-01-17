@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Menu } from 'antd';
-import { getDatabase, off, onChildAdded, ref } from 'firebase/database';
+import { getDatabase, onChildAdded, ref } from 'firebase/database';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setCurrentRoom } from '@store/modules/chatRoom';
 import { MenuGroup, MenuItem } from '../styles';
@@ -24,7 +24,7 @@ function DirectMessages() {
   useEffect(() => {
     const db = getDatabase();
     const usersRef = ref(db, 'users');
-    onChildAdded(usersRef, (snapshot) => {
+    const unsubscribe = onChildAdded(usersRef, (snapshot) => {
       const data = snapshot.val();
 
       if (currentUser?.uid !== snapshot.key) {
@@ -36,7 +36,7 @@ function DirectMessages() {
     });
 
     return () => {
-      off(usersRef);
+      unsubscribe();
       setUsers([]);
     };
   }, []);

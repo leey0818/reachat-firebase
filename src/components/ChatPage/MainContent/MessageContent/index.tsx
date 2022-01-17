@@ -2,7 +2,7 @@ import moment from 'moment';
 import styled from 'styled-components';
 import Moment from 'react-moment';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { get, getDatabase, off, onChildAdded, orderByChild, query, ref } from 'firebase/database';
+import { get, getDatabase, onChildAdded, orderByChild, query, ref } from 'firebase/database';
 import { Avatar, Comment, Image, Tooltip } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useAppSelector } from '@store/hooks';
@@ -107,8 +107,7 @@ function MessageContent(props: MessageContentProps) {
       const userSet = new Set<string>();
       const db = getDatabase();
       const msgRef = ref(db, `messages/${chatRoom.id}`);
-
-      onChildAdded(query(msgRef, orderByChild('timestamp')), (snapshot) => {
+      const unsubscribe = onChildAdded(query(msgRef, orderByChild('timestamp')), (snapshot) => {
         const data = snapshot.val();
         const message = {
           key: snapshot.key as string,
@@ -136,7 +135,7 @@ function MessageContent(props: MessageContentProps) {
       });
 
       return () => {
-        off(msgRef);
+        unsubscribe();
         setMessages([]);
         setUsers({});
       };

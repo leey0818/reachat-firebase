@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getDatabase, off, onChildAdded, onChildChanged, onChildRemoved, ref } from 'firebase/database';
+import { getDatabase, off, onChildAdded, onChildChanged, onChildRemoved, onValue, ref } from 'firebase/database';
 import { PlusCircleFilled } from '@ant-design/icons';
 import { Menu } from 'antd';
 import { MenuGroup, MenuItem } from '../styles';
@@ -13,11 +13,71 @@ type ChatRoom = {
   desc?: string;
 };
 
+type Notification = {
+  id: string;
+  total: number;
+  lastKnownTotal: number;
+  count: number;
+};
+
 function ChatRooms() {
   const dispatch = useAppDispatch();
   const curRoomId = useAppSelector((state) => state.chatRoom.currentRoom?.id);
   const [modalVisible, setModalVisible] = useState(false);
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const updateNotification = (roomId: string, childCount: number) => {
+    setNotifications((oldNotifications) => {
+      const index = oldNotifications.findIndex((o) => o.id === roomId);
+
+      if (index !== -1) {
+        const notification = { ...oldNotifications[index] };
+        notification.total = childCount;
+
+        if (roomId !== curRoomId) {
+          const lastTotal = notification.lastKnownTotal;
+          if (childCount - lastTotal > 0) {
+            notification.count = childCount - lastTotal;
+          }
+        }
+
+        const newNotifications = oldNotifications.slice();
+        newNotifications.splice(index, 1, notification);
+
+        return newNotifications;
+      } else {
+        return [
+          ...oldNotifications,
+          {
+            id: roomId,
+            total: childCount,
+            lastKnownTotal: childCount,
+            count: 0,
+          },
+        ];
+      }
+    });
+  };
+
+  const getNotificationCount = useCallback(
+    (roomId: string) => {
+      const index = notifications.findIndex((o) => o.id === roomId);
+      if (index !== -1) {
+        return notifications[index].count;
+      }
+      return 0;
+    },
+    [notifications]
+  );
+
+  const addNotificationListener = (roomId: string) => {
+    const db = getDatabase();
+    const msgRef = ref(db, `messages/${roomId}`);
+    return onValue(msgRef, (snapshot) => {
+      updateNotification(snapshot.key as string, snapshot.size);
+    });
+  };
 
   useEffect(() => {
     const db = getDatabase();
@@ -62,7 +122,10 @@ function ChatRooms() {
   }, [rooms]);
 
   const addChatRoom = (room: ChatRoom) => {
-    setRooms((oldRooms) => [room, ...oldRooms]);
+    setRooms((oldRooms) => {
+      addNotificationListener(room.id);
+      return [room, ...oldRooms];
+    });
   };
 
   const updateChatRoom = (roomId: string, roomInfo: ChatRoom) => {
@@ -109,7 +172,9 @@ function ChatRooms() {
       <Menu theme="dark" onSelect={handleSelect} selectedKeys={curRoomId ? [curRoomId] : undefined}>
         <MenuGroup title="채팅방 목록" icon={<PlusCircleFilled />} onClick={handleClickAdd}>
           {rooms.map((room) => (
-            <MenuItem key={room.id}>#{room.name}</MenuItem>
+            <MenuItem key={room.id} badge={getNotificationCount(room.id)}>
+              #{room.name}
+            </MenuItem>
           ))}
         </MenuGroup>
       </Menu>
