@@ -27,7 +27,7 @@ function ChatRooms() {
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const updateNotification = (roomId: string, childCount: number) => {
+  const updateNotification = useCallback((roomId: string, curRoomId: string, childCount: number) => {
     setNotifications((oldNotifications) => {
       const index = oldNotifications.findIndex((o) => o.id === roomId);
 
@@ -40,6 +40,9 @@ function ChatRooms() {
           if (childCount - lastTotal > 0) {
             notification.count = childCount - lastTotal;
           }
+        } else {
+          notification.lastKnownTotal = childCount;
+          notification.count = 0;
         }
 
         const newNotifications = oldNotifications.slice();
@@ -58,7 +61,7 @@ function ChatRooms() {
         ];
       }
     });
-  };
+  }, []);
 
   const getNotificationCount = useCallback(
     (roomId: string) => {
@@ -71,13 +74,20 @@ function ChatRooms() {
     [notifications]
   );
 
-  const addNotificationListener = (roomId: string) => {
+  const addNotificationListener = (roomId: string, curRoomId: string) => {
     const db = getDatabase();
     const msgRef = ref(db, `messages/${roomId}`);
     return onValue(msgRef, (snapshot) => {
-      updateNotification(snapshot.key as string, snapshot.size);
+      updateNotification(roomId, curRoomId, snapshot.size);
     });
   };
+
+  useEffect(() => {
+    if (rooms.length && curRoomId) {
+      const unsubscribes = rooms.map((room) => addNotificationListener(room.id, curRoomId));
+      return () => unsubscribes.forEach((func) => func());
+    }
+  }, [rooms, curRoomId]);
 
   useEffect(() => {
     const db = getDatabase();
@@ -122,10 +132,7 @@ function ChatRooms() {
   }, [rooms]);
 
   const addChatRoom = (room: ChatRoom) => {
-    setRooms((oldRooms) => {
-      addNotificationListener(room.id);
-      return [room, ...oldRooms];
-    });
+    setRooms((oldRooms) => [room, ...oldRooms]);
   };
 
   const updateChatRoom = (roomId: string, roomInfo: ChatRoom) => {
